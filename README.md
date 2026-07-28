@@ -1,2 +1,2 @@
-# BingoSync_SRL5_Generator
-A handy web tool to generate SRL5 JSON with a GUI
+# BingoSync SRL5 Generator
+https://ninja-cookie.github.io/BingoSync_SRL5_Generator/
