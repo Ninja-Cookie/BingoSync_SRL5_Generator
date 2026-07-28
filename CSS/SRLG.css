@@ -1,0 +1,92 @@
+:root {
+    --font: "Arial", "sans-serif";
+    --color_background: #02111B;
+    --color_bar: #022F49;
+    --color_button: #000000;
+}
+
+body {
+    background-color: var(--color_background);
+    margin: 0%;
+}
+
+button {
+    font-family: var(--font);
+    background-color: var(--color_button);
+    color: rgb(255, 255, 255);
+}
+
+.topbar {
+    display: flex;
+    background-color: var(--color_bar);
+    overflow: hidden;
+}
+
+button, input {
+    color: rgb(236, 236, 236);
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    margin: 0;
+}
+
+input
+{
+    color: black;
+}
+
+.topbar button
+{
+    padding: 10px 32px;
+}
+
+.positive {
+    background-color: #008409;
+}
+
+.negative {
+    background-color: #A80400;
+}
+
+button:hover {
+    color: rgb(255, 255, 255);
+}
+
+button.active {
+    background-color: #04AA6D;
+    color: white;
+}
+
+.centered
+{
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+summary {
+    display: flexbox;
+    cursor: pointer;
+    text-align: center;
+    font-family: var(--font);
+    background-color: #000000d2;
+}
+
+details {
+    display: flow-root;
+    user-select: none;
+    background-color: #0e0e0e;
+    color: aliceblue;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}

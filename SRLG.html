@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+    <link rel="stylesheet" href="./CSS/SRLG.css"\>
+    <script src="./js/main.js" defer></script>
+
+    <template id="template_types">
+        <div style="display: flex; margin-left: auto; margin-right: auto; justify-content: center; align-items: center;">
+            <select id="types" style="border: 0px; outline: 0px; width: 30%;"></select>
+            <button type="button" onclick="RemoveGoalType(this)" class="negative">x</button>
+        </div>
+    </template>
+
+    <template id="template_goal">
+        <div style="padding-bottom: 8px;" id="goalContainer">
+            <div class="centered">
+                <input type="text" id="goal" maxlength="64" style="width: 40%; font-weight: bold; font-size: 25px; text-align: center;"/>
+                <button type="button" style="font-size: 26px;" onclick="RemoveGoal(this)" class="negative">x</button>
+            </div>
+            <button class="centered positive" type="button" id="addGoalType" onclick="AddGoalType(this)">Add Goal Type</button>
+        </div>
+    </template>
+
+    <body>
+
+        <div class="topbar">
+            <div class="topbar">
+                <input type="text" id="typeInput" maxlength="26" style="width: 200px; font-weight: bold; font-size: 15px;"/>
+                <button type="button" class="positive" id="addType" onclick="AddOptionPrompt()" style="padding-left: 20px; padding-right: 20px">Add Type</button>
+                <button type="button" class="negative" id="removeType" onclick="RemoveOptionPrompt()" style="padding-left: 20px; padding-right: 20px">Remove Type</button>
+            </div>
+
+            <div class="topbar" style="margin-left: auto; margin-right: 0;">
+                <button type="button" class="positive" id="addType" onclick="ToggleAllDetails()" style="background-color: black; padding-left: 20px; padding-right: 20px">Toggle Details</button>
+                <button type="button" class="positive" onclick="SaveToJSON()" id="save">Save</button>
+                <button type="button" class="negative" onclick="ImportFile()" id="import">Import</button>
+                <input style="display: none;" type="file" id="importFile" accept="text/plain"/>
+            </div>
+        </div>
+
+        <div id="difficulties">
+            <details id="difficulty" style="margin-bottom: 0px;" open>
+                <summary style="font-size: 20px;">Difficulty</summary>
+                    <div style="padding-bottom: 8px; padding-top: 8px;">
+                        <button style="font-size: 20px; width: 20%;" type="button" class="centered positive" id="addGoal" onclick="AddGoal(this)">Add Goal</button>
+                    </div>
+            </details>
+        </div>
+
+    </body>
+</html>
