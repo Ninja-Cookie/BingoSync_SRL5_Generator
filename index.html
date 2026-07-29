@@ -12,7 +12,7 @@
     </template>
 
     <template id="template_goal">
-        <div style="padding-bottom: 8px;" id="goalContainer">
+        <div style="padding-bottom: 8px;" id="goalContainer" draggable="true" ondragstart="DragstartHandler(event)">
             <div class="centered">
                 <input type="text" id="goal" maxlength="64" style="width: 40%; font-weight: bold; font-size: 25px; text-align: center;"/>
                 <button type="button" style="font-size: 26px;" onclick="RemoveGoal(this)" class="negative">x</button>
@@ -20,6 +20,16 @@
             <button class="centered positive" type="button" id="addGoalType" onclick="AddGoalType(this)">Add Goal Type</button>
         </div>
     </template>
+
+    <template id="template_difficulty">
+        <details id="difficulty" style="margin-bottom: 0px;" ondrop="DropHandler(event)" ondragover="DragoverHandler(event)" open>
+            <summary style="font-size: 20px;">Difficulty</summary>
+            <div style="padding-bottom: 8px; padding-top: 8px;" id="addGoalButton">
+                <button style="font-size: 20px; width: 20%;" type="button" class="centered positive" id="addGoal" onclick="AddGoal(this)">Add Goal</button>
+            </div>
+        </details>
+    </template>
+
 
     <body>
 
@@ -39,14 +49,7 @@
             </div>
         </div>
 
-        <div id="difficulties">
-            <details id="difficulty" style="margin-bottom: 0px;" open>
-                <summary style="font-size: 20px;">Difficulty</summary>
-                    <div style="padding-bottom: 8px; padding-top: 8px;">
-                        <button style="font-size: 20px; width: 20%;" type="button" class="centered positive" id="addGoal" onclick="AddGoal(this)">Add Goal</button>
-                    </div>
-            </details>
-        </div>
+        <div id="difficulties"></div>
 
     </body>
 </html>

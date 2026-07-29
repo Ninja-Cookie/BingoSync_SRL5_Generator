@@ -3,29 +3,26 @@ const difficulties  = "#difficulties";
 const difficulty    = "#difficulty";
 const types         = "#types";
 const container     = "#goalContainer"
+const goalButton    = "#addGoalButton"
 const goalID        = "#goal"
 
 var allowCache      = false;
 
 var options = [""];
 
+var dragTarget = null;
+
 function FillDifficulties()
 {
-    for (i = 1; i < 25; i++)
+    const parent = document.querySelector(difficulties);
+
+    for (i = 0; i < 25; i++)
     {
-        const clone = document.querySelector(difficulties + ">" + difficulty).cloneNode(true);
-        const difficultiesElement = document.querySelector(difficulties);
-        difficultiesElement.lastElementChild.after(clone);
-        difficultiesElement.lastElementChild.firstElementChild.innerHTML += " " + String((i + 1)).padStart(2, '0') + " (0)";
-
-        if (i == 24)
-        {
-            const firstDifficultiesElement = document.querySelector(difficulties + ">" + difficulty).firstElementChild;
-            firstDifficultiesElement.innerHTML += " " + String(1).padStart(2, '0');
-            UpdateSummaryName(firstDifficultiesElement);
-        }
-
-        UpdateSummaryName(difficultiesElement.lastElementChild.firstElementChild);
+        const clone = document.importNode(document.querySelector("#template_difficulty").content, true);
+        const dif = parent.append(clone);
+        const elm = parent.lastElementChild;
+        elm.firstElementChild.innerHTML += " " + String((i + 1)).padStart(2, '0') + " (0)";
+        UpdateSummaryName(elm.firstElementChild);
     }
 }
 
@@ -103,6 +100,9 @@ function AddGoal(section)
 
 function UpdateSummaryName(summaryElement)
 {
+    if (summaryElement === null)
+        return;
+
     const newSize = summaryElement.parentElement.querySelectorAll(goalID).length;
     summaryElement.innerHTML = summaryElement.innerHTML.split("(")[0].trim() + " (" + String((newSize)).padStart(2, '0') + ") ";
 }
@@ -372,5 +372,43 @@ function Init()
     UpdateOptions();
     LoadSessionFromCache();
 }
+
+function DragstartHandler(ev)
+{
+    dragTarget = ev.target;
+}
+
+function DragoverHandler(ev)
+{
+    ev.preventDefault();
+}
+
+function DropHandler(ev)
+{
+    ev.preventDefault();
+    if (dragTarget === null)
+        return;
+
+    const targetSummary = dragTarget.parentElement.querySelector("summary");
+    var parent = ev.target;
+    var target = null;
+    while (parent.nodeName !== 'DETAILS')
+    {
+        if (target === null && (parent?.id === container.substring(1) || parent?.id === goalButton.substring(1)))
+            target = parent;
+
+        if (parent.previousElementSibling === null)
+            parent = parent.parentElement;
+        else
+            parent = parent.previousElementSibling;
+    }
+
+    parent.insertBefore(dragTarget, target ?? parent.lastElementChild);
+    UpdateSummaryName(parent.querySelector("summary"));
+    UpdateSummaryName(targetSummary);
+    SaveSession();
+}
+
+
 
 Init();
