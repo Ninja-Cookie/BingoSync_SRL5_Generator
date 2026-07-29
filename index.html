@@ -6,7 +6,7 @@
 
     <template id="template_types">
         <div style="display: flex; margin-left: auto; margin-right: auto; justify-content: center; align-items: center;">
-            <select id="types" style="border: 0px; outline: 0px; width: 30%;"></select>
+            <select id="types" style="border: 0px; outline: 0px; width: 30%;"><option value="-1">template</option></select>
             <button type="button" onclick="RemoveGoalType(this)" class="negative">x</button>
         </div>
     </template>
@@ -31,6 +31,7 @@
             </div>
 
             <div class="topbar" style="margin-left: auto; margin-right: 0;">
+                <button type="button" class="negative" onclick="Reset()" id="reset">Reset</button>
                 <button type="button" class="positive" id="addType" onclick="ToggleAllDetails()" style="background-color: black; padding-left: 20px; padding-right: 20px">Toggle Details</button>
                 <button type="button" class="positive" onclick="SaveToJSON()" id="save">Save</button>
                 <button type="button" class="negative" onclick="ImportFile()" id="import">Import</button>

@@ -5,6 +5,8 @@ const types         = "#types";
 const container     = "#goalContainer"
 const goalID        = "#goal"
 
+var allowCache      = false;
+
 var options = [""];
 
 function FillDifficulties()
@@ -32,12 +34,14 @@ function AddOptionPrompt()
     AddOption(document.querySelector("#typeInput")?.value?.trim());
 }
 
-function AddOption(option)
+function AddOption(option, update = true)
 {
     if (option != null && String(option) != "" && !options.includes(String(option)))
     {
         options.push(String(option));
-        UpdateOptions();
+
+        if (update)
+            UpdateOptions();
     }
 }
 
@@ -67,7 +71,7 @@ function UpdateOptions()
 
         for (i = currentOptions.length - 1; i >= 0; i--)
         {
-            if (currentOptions[i].localName == "option")
+            if (currentOptions[i].localName === "option")
                 currentOptions[i].remove();
         }
 
@@ -84,6 +88,8 @@ function UpdateOptions()
         else if (options.length > 0)
             element.selectedIndex = 0;
     });
+
+    SaveSession();
 }
 
 function AddGoal(section)
@@ -91,6 +97,7 @@ function AddGoal(section)
     const clone = document.importNode(document.querySelector("#template_goal").content, true);
     section.parentElement.parentElement.insertBefore(clone, section.parentElement);
     UpdateSummaryName(section.parentElement.parentElement.querySelector("summary"));
+    SaveSession();
     return section.parentElement.previousElementSibling;
 }
 
@@ -100,11 +107,15 @@ function UpdateSummaryName(summaryElement)
     summaryElement.innerHTML = summaryElement.innerHTML.split("(")[0].trim() + " (" + String((newSize)).padStart(2, '0') + ") ";
 }
 
-function AddGoalType(section)
+function AddGoalType(section, update = true)
 {
     const clone = document.importNode(document.querySelector("#template_types").content, true);
     section.parentElement.insertBefore(clone, section);
-    UpdateOptions();
+
+    if (update)
+        UpdateOptions();
+
+    SaveSession();
     return section.previousElementSibling;
 }
 
@@ -113,11 +124,13 @@ function RemoveGoal(section)
     const summaryElement = section.parentElement.parentElement.parentElement.querySelector("summary");
     section.parentElement.parentElement.remove();
     UpdateSummaryName(summaryElement);
+    SaveSession();
 }
 
 function RemoveGoalType(goalType)
 {
     goalType.parentElement.remove();
+    SaveSession();
 }
 
 function ImportFile()
@@ -127,31 +140,31 @@ function ImportFile()
 
 function InitReader()
 {
-    reader.onload   = () => { ParseJSON(reader.result); };
+    reader.onload   = () => { ParseJSON(reader.result); SaveSession(); };
     reader.onerror  = () => { showMessage("Error reading the file. Please try again.", "error"); };
 }
 
 function InitImport()
 {
     const importFile = document.querySelector("#importFile");
-    importFile.addEventListener("cancel", () => { console.log("Cancelled."); });
+    importFile.addEventListener("cancel", () => { });
     importFile.addEventListener("change", () =>
     {
         if (importFile.files.length === 1)
         {
             const file = importFile.files[0];
-            console.log("File selected: ", file);
             reader.readAsText(file);
         }
     });
 }
 
-function Init()
+function Reset()
 {
-    InitReader();
-    InitImport();
-    FillDifficulties();
-    UpdateOptions();
+    if (window.confirm("Reset everything?"))
+    {
+        ClearAllGoals();
+        SaveSession();
+    }
 }
 
 function ClearAllGoals()
@@ -173,6 +186,8 @@ function ClearAllGoals()
 
 function ParseJSON(json)
 {
+    allowCache = false;
+
     const difficultyEntries = [];
     try
     {
@@ -208,10 +223,13 @@ function PopulateGoals(difficultyEntries)
     ClearAllGoals();
 
     const allDifficulties = document.querySelectorAll(difficulty);
-    for (let i = 0; i < allDifficulties.length; i++)
+    for (var i = 0; i < allDifficulties.length; i++)
     {
         difficultyEntries[i].forEach(goal =>
         {
+            if ((goal.name === null || goal.name === "[empty]") && !Array.isArray(goal.types))
+                return;
+
             const goalField = AddGoal(allDifficulties[i].querySelector("#addGoal"));
             goalField.querySelector("#goal").value = goal.name?.trim();
 
@@ -219,30 +237,41 @@ function PopulateGoals(difficultyEntries)
             {
                 goal.types.forEach(type =>
                 {
-                    const typeOption = String(type.trim());
-                    AddOption(typeOption);
-                    if (options.includes(typeOption))
+                    if (type !== null)
                     {
-                        const index = options.indexOf(typeOption);
-
-                        const typeField = AddGoalType(goalField.querySelector("#addGoalType"));
-                        typeField.querySelector("#types").selectedIndex = index;
-                    }
-                    else
-                    {
-                        console.log("Type " + "\"" + typeOption + "\"" + " was invalid from JSON...");
+                        const typeOption = String(type.trim());
+                        AddOption(typeOption, false);
+                        if (options.includes(typeOption))
+                        {
+                            const typeField = AddGoalType(goalField.querySelector("#addGoalType"), false);
+                            const typesQuery = typeField.querySelector("#types");
+                            typesQuery[0].innerHTML = typeOption;
+                            typesQuery.selectedIndex = 0;
+                        }
+                        else
+                        {
+                            console.log("Type " + "\"" + typeOption + "\"" + " was invalid from JSON...");
+                        }
                     }
                 });
             }
         });
     }
+
+    UpdateOptions();
+    allowCache = true;
 }
 
-function SaveFile(content)
+function SaveFile(content, cache)
 {
-    const link = document.createElement("a");
     const file = new Blob([content], { type: 'text/plain' });
+    if (cache)
+    {
+        SaveSessionToCache(file);
+        return;
+    }
 
+    const link = document.createElement("a");
     link.href       = URL.createObjectURL(file);
     link.download   = "bingosync_srl5_game.txt";
     link.click();
@@ -250,7 +279,7 @@ function SaveFile(content)
     URL.revokeObjectURL(link.href);
 }
 
-function SaveToJSON()
+function SaveToJSON(cache = false)
 {
     const allDifficulties = document.querySelectorAll(difficulty);
     const difficultySections = [];
@@ -281,7 +310,7 @@ function SaveToJSON()
     });
 
     const finalJSON = JSON.stringify(difficultySections);
-    SaveFile(finalJSON);
+    SaveFile(finalJSON, cache);
 }
 
 function ToggleAllDetails()
@@ -289,6 +318,59 @@ function ToggleAllDetails()
     const difs = document.querySelectorAll(difficulty);
     const value = !Array.from(difs).some(tab => tab.open);
     document.querySelectorAll(difficulty).forEach(dif => dif.open = value);
+}
+
+function SaveSession()
+{
+    if (allowCache)
+        SaveToJSON(true);
+}
+
+async function SaveSessionToCache(blob)
+{
+    const data = await CompressBlobData(blob);
+
+    const reader = new FileReader();
+    reader.onloadend = function()
+    {
+        localStorage.setItem('session', reader.result);
+    }
+    reader.readAsDataURL(data);
+}
+
+async function LoadSessionFromCache()
+{
+    try {
+        const base64data = localStorage.getItem('session');
+        if (base64data === null)
+            return;
+
+        fetch(base64data).then(res => res.blob()).then(DecompressBlobData).then(ParseJSON);
+    }
+    catch (error)
+    {
+        console.log(error);
+    }
+}
+
+async function CompressBlobData(blob)
+{
+    return await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+}
+
+async function DecompressBlobData(blob)
+{
+    const result = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).blob();
+    return await result.text();
+}
+
+function Init()
+{
+    InitReader();
+    InitImport();
+    FillDifficulties();
+    UpdateOptions();
+    LoadSessionFromCache();
 }
 
 Init();
